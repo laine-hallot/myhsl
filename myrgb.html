@@ -8,14 +8,15 @@
 <html lang="en">
   <head>
     <title>Guess My HSL</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A simple HSL color guessing game.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A simple HSL color guessing game." />
     <style>
       html {
         height: 100%;
       }
+
       body {
-        font-family: monospace,monospace;
+        font-family: monospace, monospace;
         font-size: large;
         margin: 0;
         padding: 1em;
@@ -23,356 +24,389 @@
         box-sizing: border-box;
         height: 100%;
       }
+
       main {
         min-height: calc(100% - 4em);
       }
-      h1 {
-        margin: 0 0 1em 0;
+      .header {
+        margin: 0 0 36px 0;
       }
-      div.ruler, div.slider {
-        align-items: center;
+      .header h1 {
+        margin: 0 0 0.6em 0;
+      }
+
+      div.slider {
         display: flex;
+        align-items: center;
+        margin: 0.8em auto;
         max-width: 40em;
-        margin: 0.5em auto;
       }
-      div.ruler div {
+      .labled-range {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr minmax(0, 100%);
+        grid-template-rows: auto auto;
+      }
+      .labled-range > label {
+        grid-row-start: 1;
+        grid-row-end: 2;
+        grid-column-start: 1;
+        grid-column-end: 2;
+      }
+      .labled-range > input {
+        grid-row-start: 1;
+        grid-row-end: 2;
+        grid-column-start: 2;
+        grid-column-end: 2;
+      }
+      .labled-range > datalist {
+        grid-column-start: 2;
+        grid-column-end: 2;
+        grid-row-start: 2;
+        grid-row-end: 2;
+        width: 100%;
+        max-width: 40em;
         display: flex;
         justify-content: space-between;
-        width: 100%;
       }
+
       label {
         padding-right: 1em;
       }
+
       input {
         width: 100%;
       }
-      div#info, button {
+
+      div#info,
+      button {
         margin: 1em auto;
       }
+
       button {
         max-width: 15em;
         padding: 0.2em 0.7em;
         width: 100%;
-        font-family: monospace,monospace;
+        font-family: monospace, monospace;
         font-size: 1em;
       }
+
       div#result div {
         margin: 0.5em auto;
         max-width: 20em;
         padding: 0.5em;
       }
+
       div#status {
         margin: 1em auto;
         padding: 1em;
         border: medium double;
         display: none;
       }
+
       footer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         line-height: 4em;
       }
-      footer a {
-        margin-right: 1.5em;
-      }
-      footer a:last-child {
-        margin-right: 0;
+
+      .footer-row {
+        display: flex;
+        gap: 1.5em;
       }
     </style>
     <script>
-      'use strict'
+      "use strict";
 
-      const LOGGING = false
-      const MAX_ATTEMPTS = 99
+      const LOGGING = false;
+      const MAX_ATTEMPTS = 99;
 
-      let h = 0
-      let s = 0
-      let l = 0
-      let hInput, sInput, lInput
-      let hh, ss, ll
-      let info, submit, restart, result, status, mode
-      let attempts = 0
-      let statusTimer = null
-      let slidersFrozen = false
+      let h = 0;
+      let s = 0;
+      let l = 0;
+      let hInput, sInput, lInput;
+      let hh, ss, ll;
+      let info, submit, restart, result, status, mode;
+      let attempts = 0;
+      let statusTimer = null;
+      let slidersFrozen = false;
 
-      function init () {
-        hInput = document.getElementById('hin')
-        sInput = document.getElementById('sin')
-        lInput = document.getElementById('lin')
-        info = document.getElementById('info')
-        submit = document.getElementById('submit')
-        restart = document.getElementById('restart')
-        result = document.getElementById('result')
-        status = document.getElementById('status')
-        mode = document.getElementById('mode')
+      function init() {
+        hInput = document.getElementById("hin");
+        sInput = document.getElementById("sin");
+        lInput = document.getElementById("lin");
+        info = document.getElementById("info");
+        submit = document.getElementById("submit");
+        restart = document.getElementById("restart");
+        result = document.getElementById("result");
+        status = document.getElementById("status");
+        mode = document.getElementById("mode");
 
-        hInput.addEventListener('change', readInput)
-        sInput.addEventListener('change', readInput)
-        lInput.addEventListener('change', readInput)
+        hInput.addEventListener("change", readInput);
+        sInput.addEventListener("change", readInput);
+        lInput.addEventListener("change", readInput);
 
-        hInput.addEventListener('input', readInput)
-        sInput.addEventListener('input', readInput)
-        lInput.addEventListener('input', readInput)
-        
-        submit.addEventListener('click', submitInput)
-        restart.addEventListener('click', newGame)
-        mode.addEventListener('click', changeMode)
-        newGame()
+        hInput.addEventListener("input", readInput);
+        sInput.addEventListener("input", readInput);
+        lInput.addEventListener("input", readInput);
+
+        submit.addEventListener("click", submitInput);
+        restart.addEventListener("click", newGame);
+        mode.addEventListener("click", changeMode);
+        newGame();
       }
 
-      function newGame () {
-        pickHSL()
-        setupGame(h, s, l)
+      function newGame() {
+        pickHSL();
+        setupGame(h, s, l);
       }
 
-      function setGame (hh, ss, ll) { // eslint-disable-line no-unused-vars
+      function setGame(hh, ss, ll) {
+        // eslint-disable-line no-unused-vars
         // Useful to set arbitrary colors for local testing.
-        h = hh
-        s = ss
-        l = ll
-        setupGame(h, s, l)
+        h = hh;
+        s = ss;
+        l = ll;
+        setupGame(h, s, l);
       }
 
-      function pickHSL () {
-        h = Math.floor(Math.random() * 360)
-        s = Math.floor(Math.random() * 100)
-        l = Math.floor(Math.random() * 100)
+      function pickHSL() {
+        h = Math.floor(Math.random() * 360);
+        s = Math.floor(Math.random() * 100);
+        l = Math.floor(Math.random() * 100);
       }
 
-      function setupGame (h, s, l) {
-        log('setting up new game')
-        info.style.display = 'inline-block'
-        submit.style.display = 'none'
-        restart.style.display = 'none'
-        status.style.display = 'none'
-        result.innerHTML = ''
-        attempts = 0
-        hInput.disabled = sInput.disabled = lInput.disabled = false
-        slidersFrozen = false
-        hInput.value = lInput.value = sInput.value = 7
-        paintGame(h, s, l)
-        mode.href = window.location.hash === '#x' ? '#' : '#x'
-        log('new game is ready')
+      function setupGame(h, s, l) {
+        log("setting up new game");
+        info.style.display = "inline-block";
+        submit.style.display = "none";
+        restart.style.display = "none";
+        status.style.display = "none";
+        result.innerHTML = "";
+        attempts = 0;
+        hInput.disabled = sInput.disabled = lInput.disabled = false;
+        slidersFrozen = false;
+        hInput.value = lInput.value = sInput.value = 7;
+        paintGame(h, s, l);
+        mode.href = window.location.hash === "#x" ? "#" : "#x";
+        log("new game is ready");
       }
 
-      function paintGame (h, s, l) {
-        const dark = luminance(h, s, l) < luminance(0, 0, 34.5)
-        document.body.style.background = toCssHsl(h, s, l)
-        document.body.style.color = dark ? '#fff' : '#000'
-        hInput.style.accentColor = dark ? '#f99' : '#900'
-        sInput.style.accentColor = dark ? '#0c0' : '#050'
-        lInput.style.accentColor = dark ? '#0cf' : '#00f'
-        const anchors = document.getElementsByTagName('a')
+      function paintGame(h, s, l) {
+        const dark = luminance(h, s, l) < luminance(0, 0, 34.5);
+        document.body.style.background = toCssHsl(h, s, l);
+        document.body.style.color = dark ? "#fff" : "#000";
+        const anchors = document.getElementsByTagName("a");
         for (let i = 0; i < anchors.length; ++i) {
-          const a = anchors[i]
-          a.style.color = dark ? '#eef' : '#006'
+          const a = anchors[i];
+          a.style.color = dark ? "#eef" : "#006";
         }
       }
 
-      function readInput (e) {
+      function readInput(e) {
         if (slidersFrozen) {
-          hInput.valueAsNumber = hh
-          sInput.valueAsNumber = ss
-          lInput.valueAsNumber = ll
+          hInput.valueAsNumber = hh;
+          sInput.valueAsNumber = ss;
+          lInput.valueAsNumber = ll;
         } else {
-          hh = hInput.valueAsNumber
-          ss = sInput.valueAsNumber
-          ll = lInput.valueAsNumber
-          submit.innerHTML = 'Submit ' + toCssHsl(hh, ss, ll)
-          submit.style.display = 'inline-block'
-          info.style.display = 'none'
+          hh = hInput.valueAsNumber;
+          ss = sInput.valueAsNumber;
+          ll = lInput.valueAsNumber;
+          submit.innerHTML = "Submit " + toCssHsl(hh, ss, ll);
+          submit.style.display = "inline-block";
+          info.style.display = "none";
         }
       }
 
-      function submitInput () {
-        addMove(h, s, l, hh, ss, ll, ++attempts)
+      function submitInput() {
+        addMove(h, s, l, hh, ss, ll, ++attempts);
       }
 
-      function addMove (h, s, l, hh, ss, ll, attempts) {
-        const dark = luminance(hh, ss, ll) < luminance(8, 8, 8)
-        const hslValue = toCssHsl(hh, ss, ll)
-        const won = hh === h && ss === s && ll === l
-        const lPad = attempts < 10 ? '&nbsp;' : ''
-        const rPad = '&nbsp;'
-        let scored = score(h, s, l, hh, ss, ll)
-        const div = document.createElement('div')
-        scored = (scored < 10 ? '0' : '') + scored
-        div.style.background = hslValue
-        div.style.color = dark ? '#fff' : '#000'
-        div.innerHTML = lPad + attempts + ') ' + hslValue
-        log('input=' + hh + ',' + ss + ',' + ll + ' hex=' + hslValue +
-            ' scored=' + scored + ' won=' + won)
+      function addMove(h, s, l, hh, ss, ll, attempts) {
+        const dark = luminance(hh, ss, ll) < luminance(8, 8, 8);
+        const hslValue = toCssHsl(hh, ss, ll);
+        const won = hh === h && ss === s && ll === l;
+        const lPad = attempts < 10 ? "&nbsp;" : "";
+        const rPad = "&nbsp;";
+        let scored = score(h, s, l, hh, ss, ll);
+        const div = document.createElement("div");
+        scored = (scored < 10 ? "0" : "") + scored;
+        div.style.background = hslValue;
+        div.style.color = dark ? "#fff" : "#000";
+        div.innerHTML = lPad + attempts + ") " + hslValue;
+        log(
+          "input=" +
+            hh +
+            "," +
+            ss +
+            "," +
+            ll +
+            " hex=" +
+            hslValue +
+            " scored=" +
+            scored +
+            " won=" +
+            won
+        );
         if (won) {
-          div.innerHTML += ' (Splendid!)' + rPad
-          div.style.border = 'thin solid #' + (dark ? 'ccc' : '333')
-          win()
-        } else if (window.location.hash === '#x') {
-          div.innerHTML += ' (Try again)' + rPad
+          div.innerHTML += " (Splendid!)" + rPad;
+          div.style.border = "thin solid #" + (dark ? "ccc" : "333");
+          win();
+        } else if (window.location.hash === "#x") {
+          div.innerHTML += " (Try again)" + rPad;
         } else {
-          div.innerHTML += ' (' + scored + '% match)' + rPad
+          div.innerHTML += " (" + scored + "% match)" + rPad;
         }
-        document.getElementById('result').prepend(div)
+        document.getElementById("result").prepend(div);
         if (attempts === MAX_ATTEMPTS) {
-          halt()
+          halt();
         }
       }
 
-      function halt () {
-        hInput.disabled = sInput.disabled = lInput.disabled = true
-        submit.style.display = 'none'
-        restart.style.display = 'inline-block'
-        log('halt complete')
+      function halt() {
+        hInput.disabled = sInput.disabled = lInput.disabled = true;
+        submit.style.display = "none";
+        restart.style.display = "inline-block";
+        log("halt complete");
       }
 
-      function win () {
-        slidersFrozen = true
-        submit.style.display = 'none'
-        restart.style.display = 'inline-block'
-        log('win complete')
+      function win() {
+        slidersFrozen = true;
+        submit.style.display = "none";
+        restart.style.display = "inline-block";
+        log("win complete");
       }
 
-      function score (h, s, l, hh, ss, ll) {
-        const maxHErr = Math.max(h, 360 - h)
-        const maxSErr = Math.max(s, 100 - s)
-        const maxLErr = Math.max(l, 100 - l)
-        const maxDist = Math.sqrt(maxHErr * maxHErr +
-                                  maxSErr * maxSErr +
-                                  maxLErr * maxLErr)
-        const hErr = Math.abs(hh - h)
-        const sErr = Math.abs(ss - s)
-        const lErr = Math.abs(ll - l)
-        const dist = Math.sqrt(hErr * hErr +
-                               sErr * sErr +
-                               lErr * lErr)
-        return Math.floor(100 * (1 - dist / maxDist))
+      function score(h, s, l, hh, ss, ll) {
+        const maxHErr = Math.max(h, 360 - h);
+        const maxSErr = Math.max(s, 100 - s);
+        const maxLErr = Math.max(l, 100 - l);
+        const maxDist = Math.sqrt(
+          maxHErr * maxHErr + maxSErr * maxSErr + maxLErr * maxLErr
+        );
+        const hErr = Math.abs(hh - h);
+        const sErr = Math.abs(ss - s);
+        const lErr = Math.abs(ll - l);
+        const dist = Math.sqrt(hErr * hErr + sErr * sErr + lErr * lErr);
+        return Math.floor(100 * (1 - dist / maxDist));
       }
 
-      function toCssHsl (h, s, l) {
-        return (`hsl(${h} ${s}% ${l}%)`).toUpperCase()
+      function toCssHsl(h, s, l) {
+        return `hsl(${h} ${s}% ${l}%)`.toUpperCase();
       }
 
-      function luminance (h, s, l) {
+      function luminance(h, s, l) {
         return l; // not technically correct but should be good enough to determine with text color to use
       }
 
-      function changeMode (e) {
-        e.preventDefault()
-        if (window.location.hash === '#x') {
-          window.history.replaceState(null, '', '#')
-          mode.href = '#x'
-          showStatus('Switched to normal mode!')
+      function changeMode(e) {
+        e.preventDefault();
+        if (window.location.hash === "#x") {
+          window.history.replaceState(null, "", "#");
+          mode.href = "#x";
+          showStatus("Switched to normal mode!");
         } else {
-          window.history.replaceState(null, '', '#x')
-          mode.href = '#'
-          showStatus('Switched to expert mode!')
+          window.history.replaceState(null, "", "#x");
+          mode.href = "#";
+          showStatus("Switched to expert mode!");
         }
       }
 
-      function showStatus (msg) {
-        let opacity = 100
-        let subtract = 0.01
+      function showStatus(msg) {
+        let opacity = 100;
+        let subtract = 0.01;
 
-        status.style.display = 'inline-block'
-        status.style.opacity = opacity + '%'
-        status.innerHTML = msg
+        status.style.display = "inline-block";
+        status.style.opacity = opacity + "%";
+        status.innerHTML = msg;
 
         if (statusTimer != null) {
-          clearTimeout(statusTimer)
+          clearTimeout(statusTimer);
         }
 
         statusTimer = setInterval(function () {
-          opacity -= subtract
-          subtract *= 1.2
+          opacity -= subtract;
+          subtract *= 1.2;
           if (statusTimer != null && opacity <= 0) {
-            clearTimeout(statusTimer)
-            statusTimer = null
-            status.style.display = 'none'
+            clearTimeout(statusTimer);
+            statusTimer = null;
+            status.style.display = "none";
           }
-          status.style.opacity = opacity + '%'
-        }, 50)
+          status.style.opacity = opacity + "%";
+        }, 50);
       }
 
-      function log () {
-        const args = Array.prototype.slice.call(arguments)
+      function log() {
+        const args = Array.prototype.slice.call(arguments);
         if (LOGGING) {
-          console.log('attempts=' + attempts +
-                      ' color=' + h + ',' + s + ',' + l +
-                      ' cssValue=' + toCssHsl(h, s, l) +
-                      ' ' + args.join(' '))
+          console.log(
+            "attempts=" +
+              attempts +
+              " color=" +
+              h +
+              "," +
+              s +
+              "," +
+              l +
+              " cssValue=" +
+              toCssHsl(h, s, l) +
+              " " +
+              args.join(" ")
+          );
         }
       }
 
-      window.addEventListener('load', init)
+      window.addEventListener("load", init);
     </script>
   </head>
+
   <body>
     <main>
-      <h1>Guess My HSL</h1>
-      <div class="ruler">
-        <label>&nbsp;</label>
-        <div>
-          <span>0</span>
-          <span>1</span>
-          <span>2</span>
-          <span>3</span>
-          <span>4</span>
-          <span>5</span>
-          <span>6</span>
-          <span>7</span>
-          <span>8</span>
-          <span>9</span>
-          <span>A</span>
-          <span>B</span>
-          <span>C</span>
-          <span>D</span>
-          <span>E</span>
-          <span>F</span>
+      <div class="header">
+        <h1>Guess My HSL</h1>
+        <span
+          >A game based on:
+          <a href="https://susam.net/myrgb.html">Guess My RGB</a></span
+        >
+      </div>
+      <div class="slider">
+        <div class="labled-range">
+          <label for="hin">H</label>
+          <input type="range" id="hin" name="hin" max="360" list="values" />
+          <datalist id="values">
+            <option value="0" label="R"></option>
+            <option value="120" label="G"></option>
+            <option value="240" label="B"></option>
+            <option value="360" label="R"></option>
+          </datalist>
         </div>
       </div>
       <div class="slider">
-        <label for="hin">H</label>
-        <input type="range" id="hin" name="hin" max="360">
-      </div>
-      <div class="slider">
         <label for="sin">S</label>
-        <input type="range" id="sin" name="sin" max="100">
+        <input type="range" id="sin" name="sin" max="100" step=".01" />
       </div>
       <div class="slider">
         <label for="lin">L</label>
-        <input type="range" id="lin" name="lin" max="100">
+        <input type="range" id="lin" name="lin" max="100" step=".01" />
       </div>
-      <datalist id="values">
-        <option value="0" label="0"></option>
-        <option value="1" label="1"></option>
-        <option value="2" label="2"></option>
-        <option value="3" label="3"></option>
-        <option value="4" label="4"></option>
-        <option value="5" label="5"></option>
-        <option value="6" label="6"></option>
-        <option value="7" label="7"></option>
-        <option value="8" label="8"></option>
-        <option value="9" label="9"></option>
-        <option value="10" label="A"></option>
-        <option value="11" label="B"></option>
-        <option value="12" label="C"></option>
-        <option value="13" label="D"></option>
-        <option value="14" label="E"></option>
-        <option value="15" label="F"></option>
-      </datalist>
-      <div id="info">Move the sliders above to guess the background HSL color.</div>
+      <div id="info">
+        Move the sliders above to guess the background HSL color.
+      </div>
       <button id="submit"></button>
       <button id="restart">New Game</button>
       <div id="result"></div>
       <div id="status"></div>
     </main>
     <footer>
-      <div>
-        <p>Based on <a>Guess My RGB</a></p>
+      <div class="footer-row hsl-footer">
         <a id="mode" href="#x">Mode</a>
         <a href="https://github.com/laine-hallot/myrgb">GitHub</a>
       </div>
-      <div>
+      <div class="footer-row original-footer">
         <a href="https://github.com/susam/myrgb">Original GitHub</a>
         <a href="https://mastodon.social/@susam">Original Author's Mastodon</a>
-        <a href="https://susam.net/links.html">>Original Author's Links</a>
+        <a href="https://susam.net/links.html">Original Author's Links</a>
       </div>
     </footer>
   </body>

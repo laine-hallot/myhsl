@@ -1,0 +1,104 @@
+html {
+  height: 100%;
+}
+
+body {
+  font-family: monospace, monospace;
+  font-size: large;
+  margin: 0;
+  padding: 1em;
+  text-align: center;
+  box-sizing: border-box;
+  height: 100%;
+}
+
+main {
+  min-height: calc(100% - 4em);
+}
+.header {
+  margin: 0 0 36px 0;
+}
+.header h1 {
+  margin: 0 0 0.6em 0;
+}
+
+div.slider {
+  display: flex;
+  align-items: center;
+  margin: 0.8em auto;
+  max-width: 40em;
+}
+.labled-range {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 100%);
+  grid-template-rows: auto auto;
+}
+.labled-range > label {
+  grid-row-start: 1;
+  grid-row-end: 2;
+  grid-column-start: 1;
+  grid-column-end: 2;
+}
+.labled-range > input {
+  grid-row-start: 1;
+  grid-row-end: 2;
+  grid-column-start: 2;
+  grid-column-end: 2;
+}
+.labled-range > datalist {
+  grid-column-start: 2;
+  grid-column-end: 2;
+  grid-row-start: 2;
+  grid-row-end: 2;
+  width: 100%;
+  max-width: 40em;
+  display: flex;
+  justify-content: space-between;
+}
+
+label {
+  padding-right: 1em;
+}
+
+input {
+  width: 100%;
+}
+
+div#info,
+button {
+  margin: 1em auto;
+}
+
+button {
+  max-width: 15em;
+  padding: 0.2em 0.7em;
+  width: 100%;
+  font-family: monospace, monospace;
+  font-size: 1em;
+}
+
+div#result div {
+  margin: 0.5em auto;
+  max-width: 20em;
+  padding: 0.5em;
+}
+
+div#status {
+  margin: 1em auto;
+  padding: 1em;
+  border: medium double;
+  display: none;
+}
+
+footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 4em;
+}
+
+.footer-row {
+  display: flex;
+  gap: 1.5em;
+}

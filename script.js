@@ -53,9 +53,9 @@ function setGame(hh, ss, ll) {
 }
 
 function pickHSL() {
-  h = Math.floor(Math.random() * 360);
-  s = Math.floor(Math.random() * 100);
-  l = Math.floor(Math.random() * 100);
+  h = Math.floor(Math.random() * 20) * 18;
+  s = Math.floor(Math.random() * 20) * 5;
+  l = Math.floor(Math.random() * 20) * 5;
 }
 
 function setupGame(h, s, l) {

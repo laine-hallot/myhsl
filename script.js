@@ -95,7 +95,6 @@ const readInput = (e) => {
     ss = sInput.valueAsNumber;
     ll = lInput.valueAsNumber;
     submit.innerHTML = "Submit " + toCssHsl(hh, ss, ll);
-    console.log(mainGame);
     mainGame.className = "game-active";
   }
 };
@@ -198,33 +197,18 @@ const showStatus = (msg) => {
   //statusDisplay.animate();
 
   if (statusTimer != null) {
+    statusDisplay.classList.remove("flash");
     clearTimeout(statusTimer);
+  } else {
   }
 
   statusDisplay.classList.add("flash");
-  statusTimer = setTimeout(() => {
-    statusDisplay.classList.remove("flash");
-  }, 4000);
-  /* 
-  statusDisplay.style.display = "inline-block";
-  statusDisplay.style.opacity = opacity + "%"; */
-  statusDisplay.innerHTML = msg;
-  /* 
-  if (statusTimer != null) {
-    clearTimeout(statusTimer);
-  }
 
-  statusTimer = setInterval(() => {
-    opacity -= subtract;
-    subtract *= 1.2;
-    console.log({ subtract, opacity });
-    if (statusTimer != null && opacity <= 0) {
-      clearTimeout(statusTimer);
-      statusTimer = null;
-      statusDisplay.style.display = "none";
-    }
-    statusDisplay.style.opacity = opacity + "%";
-  }, 50); */
+  statusDisplay.addEventListener("animationend", (animationEvent) => {
+    statusDisplay.classList.remove("flash");
+  });
+
+  statusDisplay.innerHTML = msg;
 };
 
 const log = (...args) => {

@@ -10,6 +10,11 @@ body {
   text-align: center;
   box-sizing: border-box;
   height: 100%;
+  color: #000;
+}
+
+body.dark {
+  color: #fff;
 }
 
 main {
@@ -20,6 +25,42 @@ main {
 }
 .header h1 {
   margin: 0 0 0.6em 0;
+}
+
+#info {
+  display: inline-block;
+}
+
+#submit,
+#restart,
+#status {
+  display: none;
+}
+
+main.game-active {
+}
+
+main.game-active #submit {
+  display: inline-block;
+}
+
+main.game-active #info {
+  display: none;
+}
+
+main.game-end {
+}
+
+main.game-end #restart {
+  display: inline-block;
+}
+
+main.game-end #submit {
+  display: none;
+}
+
+main.game-end #info {
+  display: none;
 }
 
 div.slider {
@@ -91,6 +132,11 @@ div#status {
   display: none;
 }
 
+div#status.flash {
+  display: inline-block;
+  animation: 4s status-toast cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
 footer {
   display: flex;
   flex-direction: column;
@@ -101,4 +147,14 @@ footer {
 .footer-row {
   display: flex;
   gap: 1.5em;
+}
+
+@keyframes status-toast {
+  0% {
+    display: inline-block;
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }

@@ -8,10 +8,13 @@ let s = 0;
 let l = 0;
 let hInput, sInput, lInput;
 let hh, ss, ll;
-let info, submit, restart, result, status, mode;
+let info, submit, restart, result, statusDisplay, mode;
 let attempts = 0;
 let statusTimer = null;
 let slidersFrozen = false;
+let mainGame;
+
+const gameStates = ["default", "game-active", "game-end"];
 
 const init = () => {
   hInput = document.getElementById("hin");
@@ -21,8 +24,9 @@ const init = () => {
   submit = document.getElementById("submit");
   restart = document.getElementById("restart");
   result = document.getElementById("result");
-  status = document.getElementById("status");
+  statusDisplay = document.getElementById("status");
   mode = document.getElementById("mode");
+  [mainGame] = document.getElementsByTagName("main");
 
   hInput.addEventListener("change", readInput);
   sInput.addEventListener("change", readInput);
@@ -60,10 +64,6 @@ const pickHSL = () => {
 
 const setupGame = (h, s, l) => {
   log("setting up new game");
-  info.style.display = "inline-block";
-  submit.style.display = "none";
-  restart.style.display = "none";
-  status.style.display = "none";
   result.innerHTML = "";
   attempts = 0;
   hInput.disabled = sInput.disabled = lInput.disabled = false;
@@ -77,7 +77,7 @@ const setupGame = (h, s, l) => {
 const paintGame = (h, s, l) => {
   const dark = luminance(h, s, l) < luminance(0, 0, 34.5);
   document.body.style.background = toCssHsl(h, s, l);
-  document.body.style.color = dark ? "#fff" : "#000";
+  document.body.className = dark ? "dark" : "";
   const anchors = document.getElementsByTagName("a");
   for (let i = 0; i < anchors.length; ++i) {
     const a = anchors[i];
@@ -95,8 +95,8 @@ const readInput = (e) => {
     ss = sInput.valueAsNumber;
     ll = lInput.valueAsNumber;
     submit.innerHTML = "Submit " + toCssHsl(hh, ss, ll);
-    submit.style.display = "inline-block";
-    info.style.display = "none";
+    console.log(mainGame);
+    mainGame.className = "game-active";
   }
 };
 
@@ -147,15 +147,13 @@ const addMove = (h, s, l, hh, ss, ll, attempts) => {
 
 const halt = () => {
   hInput.disabled = sInput.disabled = lInput.disabled = true;
-  submit.style.display = "none";
-  restart.style.display = "inline-block";
+  mainGame.className = "game-end";
   log("halt complete");
 };
 
 const win = () => {
   slidersFrozen = true;
-  submit.style.display = "none";
-  restart.style.display = "inline-block";
+  mainGame.className = "game-end";
   log("win complete");
 };
 
@@ -197,11 +195,21 @@ const changeMode = (e) => {
 const showStatus = (msg) => {
   let opacity = 100;
   let subtract = 0.01;
+  //statusDisplay.animate();
 
-  status.style.display = "inline-block";
-  status.style.opacity = opacity + "%";
-  status.innerHTML = msg;
+  if (statusTimer != null) {
+    clearTimeout(statusTimer);
+  }
 
+  statusDisplay.classList.add("flash");
+  statusTimer = setTimeout(() => {
+    statusDisplay.classList.remove("flash");
+  }, 4000);
+  /* 
+  statusDisplay.style.display = "inline-block";
+  statusDisplay.style.opacity = opacity + "%"; */
+  statusDisplay.innerHTML = msg;
+  /* 
   if (statusTimer != null) {
     clearTimeout(statusTimer);
   }
@@ -209,17 +217,17 @@ const showStatus = (msg) => {
   statusTimer = setInterval(() => {
     opacity -= subtract;
     subtract *= 1.2;
+    console.log({ subtract, opacity });
     if (statusTimer != null && opacity <= 0) {
       clearTimeout(statusTimer);
       statusTimer = null;
-      status.style.display = "none";
+      statusDisplay.style.display = "none";
     }
-    status.style.opacity = opacity + "%";
-  }, 50);
+    statusDisplay.style.opacity = opacity + "%";
+  }, 50); */
 };
 
-const log = () => {
-  const args = Array.prototype.slice.call(arguments);
+const log = (...args) => {
   if (LOGGING) {
     console.log(
       "attempts=" +

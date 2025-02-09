@@ -134,7 +134,8 @@ div#status {
 
 div#status.flash {
   display: inline-block;
-  animation: 4s status-toast cubic-bezier(0.165, 0.84, 0.44, 1);
+  animation: 2300ms status-toast;
+  animation-timing-function: cubic-bezier(0.7, 0, 0.84, 0);
 }
 
 footer {
